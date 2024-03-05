@@ -1,3 +1,4 @@
+using System.Collections;
 using TempleRun;
 using UnityEngine;
 using UnityEngine.Events;
@@ -16,6 +17,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float initialGravityValue = -9.81f;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask turnLayer;
+    [SerializeField] private AnimationClip slideAnimationClip;
 
     private float playerSpeed;
     private float gravity;
@@ -27,7 +29,11 @@ public class PlayerController : MonoBehaviour
     private InputAction jumpAction;
     private InputAction slideAction;
 
+    PlayerEvents playerEvents;
     private CharacterController controller;
+    private Animator animator;
+
+    private int slidingAnimationID;
 
     private bool isSliding = false;
 
@@ -37,6 +43,10 @@ public class PlayerController : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
         controller = GetComponent<CharacterController>();
+        animator = GetComponentInChildren<Animator>();
+
+        slidingAnimationID = Animator.StringToHash("Slide");
+
         turnAction = playerInput.actions["Turn"];
         jumpAction = playerInput.actions["Jump"];
         slideAction = playerInput.actions["Slide"];
@@ -67,6 +77,7 @@ public class PlayerController : MonoBehaviour
         Vector3? turnPosition = CheckTurn(context.ReadValue<float>());
         if(!turnPosition.HasValue)
         {
+            
             return;
         }
         Vector3 targetDirection = Quaternion.AngleAxis(90* context.ReadValue<float>(), Vector3.up) * movementDirection;
@@ -115,12 +126,40 @@ public class PlayerController : MonoBehaviour
     {
         if(!isSliding && IsGrounded())
         {
-
+            StartCoroutine(Slide());
         }
+    }
+
+    private IEnumerator Slide()
+    {
+        isSliding = true;
+        // shrink collider
+        Vector3 originControllerCenter = controller.center;
+        Vector3 newControllerCenter = originControllerCenter;
+        controller.height /= 2;
+        newControllerCenter.y -= controller.height / 2;
+        controller.center = newControllerCenter;
+
+        // play the animation
+        animator.Play(slidingAnimationID);
+        print("Slide function being called");
+        yield return new WaitForSeconds(slideAnimationClip.length);
+        isSliding = false;
+
+        // setting character controller back to normal after slide animation
+        controller.height *= 2;
+        controller.center = originControllerCenter;
+        isSliding = false;
     }
 
     private void Update()
     {
+        if(!IsGrounded(20f))
+        {
+            GameOver();
+            return;
+        }
+
         controller.Move(transform.forward * playerSpeed * Time.deltaTime);
 
         if(IsGrounded() && playerVelocity.y < 0)
@@ -150,4 +189,5 @@ public class PlayerController : MonoBehaviour
         }
         return false;
     }
+
 }
