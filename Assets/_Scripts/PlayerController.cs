@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] private float initialGravityValue = -9.81f;
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private LayerMask turnLayer;
     [SerializeField] private AnimationClip slideAnimationClip;
 
@@ -29,15 +30,18 @@ public class PlayerController : MonoBehaviour
     private InputAction jumpAction;
     private InputAction slideAction;
 
-    PlayerEvents playerEvents;
     private CharacterController controller;
     private Animator animator;
 
     private int slidingAnimationID;
 
     private bool isSliding = false;
+    private float score = 0;
+    private float scoreMultiplier = 10;
 
     [SerializeField] private UnityEvent<Vector3> turnEvent;
+    [SerializeField] private UnityEvent<int> gameOverEvent;
+    [SerializeField] private UnityEvent<int> scoreUpdateEvent;
 
     private void Awake()
     {
@@ -77,7 +81,7 @@ public class PlayerController : MonoBehaviour
         Vector3? turnPosition = CheckTurn(context.ReadValue<float>());
         if(!turnPosition.HasValue)
         {
-            
+            GameOver();
             return;
         }
         Vector3 targetDirection = Quaternion.AngleAxis(90* context.ReadValue<float>(), Vector3.up) * movementDirection;
@@ -160,6 +164,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // score functionality
+        score += scoreMultiplier * Time.deltaTime;
+        scoreUpdateEvent.Invoke((int)score);
+
         controller.Move(transform.forward * playerSpeed * Time.deltaTime);
 
         if(IsGrounded() && playerVelocity.y < 0)
@@ -190,4 +198,18 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    private void GameOver()
+    {
+        Debug.Log("Game Over");
+        gameOverEvent.Invoke((int)score);
+        gameObject.SetActive(false);
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if(((1 << hit.collider.gameObject.layer) & obstacleLayer) != 0)
+        {
+            GameOver();
+        }
+    }
 }
