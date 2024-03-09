@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1705790822217711114}
   - component: {fileID: 4873889970142672101}
   - component: {fileID: 3356916560586250789}
+  - component: {fileID: 4140774792957168531}
   m_Layer: 0
   m_Name: InGameUI
   m_TagString: Untagged
@@ -103,6 +104,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &4140774792957168531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2363077517219879755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 733a295c75310bc4585e082c87dbca59, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scoreText: {fileID: 6282557095702654196}
 --- !u!1 &3542553754447804646
 GameObject:
   m_ObjectHideFlags: 0
@@ -209,7 +223,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialPlayerSpeed: 4
   maximumPlayerSpeed: 30
-  speedIncreaseRate: 0.1
+  speedIncreaseRate: 1
   jumpHeight: 1
   initialGravityValue: -9.81
   groundLayer:
@@ -221,7 +235,7 @@ MonoBehaviour:
   turnLayer:
     serializedVersion: 2
     m_Bits: 128
-  slideAnimationClip: {fileID: 0}
+  slideAnim: {fileID: -203655887218126122, guid: 09e5c15e42fc59a4482b5a77edf4c6d8, type: 3}
   turnEvent:
     m_PersistentCalls:
       m_Calls:
@@ -242,7 +256,19 @@ MonoBehaviour:
       m_Calls: []
   scoreUpdateEvent:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4140774792957168531}
+        m_TargetAssemblyTypeName: ScoreUpdater, Assembly-CSharp
+        m_MethodName: UpdateScore
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &5286531278510523776
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,7 +296,7 @@ RectTransform:
   m_GameObject: {fileID: 5286531278510523776}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.3, y: 1.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1093237900019942647}
@@ -278,8 +304,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 91, y: -66}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 91, y: -49}
+  m_SizeDelta: {x: 230.4641, y: 48.2592}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &3561540678456185160
 CanvasRenderer:
@@ -336,8 +362,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 38
-  m_fontSizeBase: 38
+  m_fontSize: 34
+  m_fontSizeBase: 34
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -372,7 +398,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -14.447632, w: 0}
+  m_margin: {x: 0, y: 0, z: -42.3006, w: -7.83358}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

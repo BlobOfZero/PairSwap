@@ -18,7 +18,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private LayerMask obstacleLayer;
     [SerializeField] private LayerMask turnLayer;
-    [SerializeField] private AnimationClip slideAnimationClip;
+    [SerializeField] private AnimationClip slideAnim;
 
     private float playerSpeed;
     private float gravity;
@@ -33,8 +33,6 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
     private Animator animator;
 
-    private int slidingAnimationID;
-
     private bool isSliding = false;
     private float score = 0;
     private float scoreMultiplier = 10;
@@ -48,8 +46,6 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
-
-        slidingAnimationID = Animator.StringToHash("Slide");
 
         turnAction = playerInput.actions["Turn"];
         jumpAction = playerInput.actions["Jump"];
@@ -74,6 +70,8 @@ public class PlayerController : MonoBehaviour
     {
         playerSpeed = initialPlayerSpeed;
         gravity = initialGravityValue;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     private void PlayerTurn(InputAction.CallbackContext context)
@@ -88,6 +86,9 @@ public class PlayerController : MonoBehaviour
 
         turnEvent.Invoke(targetDirection);
         Turn(context.ReadValue<float>(), turnPosition.Value);
+
+        playerSpeed += speedIncreaseRate;
+        playerSpeed = Mathf.Clamp(playerSpeed, initialPlayerSpeed, maximumPlayerSpeed);
     }
 
     private Vector3? CheckTurn(float turnValue)
@@ -107,6 +108,7 @@ public class PlayerController : MonoBehaviour
 
     private void Turn(float turnValue, Vector3 turnPostion)
     {
+        
         Vector3 tempPlayerPostion = new Vector3(turnPostion.x, transform.position.y, turnPostion.z);
         controller.enabled = false;
         transform.position = tempPlayerPostion;
@@ -144,10 +146,10 @@ public class PlayerController : MonoBehaviour
         newControllerCenter.y -= controller.height / 2;
         controller.center = newControllerCenter;
 
-        // play the animation
-        animator.Play(slidingAnimationID);
+        animator.Play("Slide");
+
         print("Slide function being called");
-        yield return new WaitForSeconds(slideAnimationClip.length);
+        yield return new WaitForSeconds(2f);
         isSliding = false;
 
         // setting character controller back to normal after slide animation
