@@ -41,15 +41,28 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private UnityEvent<int> gameOverEvent;
     [SerializeField] private UnityEvent<int> scoreUpdateEvent;
 
+    private StringBuilder scoreTextBuilder = new StringBuilder();
+
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
         controller = GetComponent<CharacterController>();
         animator = GetComponentInChildren<Animator>();
 
+        // Cache input actions
         turnAction = playerInput.actions["Turn"];
         jumpAction = playerInput.actions["Jump"];
         slideAction = playerInput.actions["Slide"];
+    }
+
+    private void Start()
+    {
+        playerSpeed = initialPlayerSpeed;
+        gravity = initialGravityValue;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        scoreTextBuilder.Capacity = 20;
     }
 
     private void OnEnable()
@@ -179,6 +192,10 @@ public class PlayerController : MonoBehaviour
 
         playerVelocity.y += gravity * Time.deltaTime;
         controller.Move(playerVelocity * Time.deltaTime);
+
+        scoreTextBuilder.Clear();
+        scoreTextBuilder.Append("Current score: ").Append((int)score);
+        scoreText.text = scoreTextBuilder.ToString();
 
     }
 

@@ -18,63 +18,105 @@ public class TileSpawner : MonoBehaviour
     private Vector3 currentTileDirection = Vector3.forward;
     private GameObject previousTile;
 
-    private List<GameObject> currentTiles;
-    private List<GameObject> currentObstacles;
+    private List<GameObject> currentTiles = new List<GameObject>();
+    private List<GameObject> currentObstacles = new List<GameObject>();
+    private Queue<GameObject> tilePool = new Queue<GameObject>();
+    private Queue<GameObject> obstaclePool = new Queue<GameObject>();
 
     private void Start()
     {
-        currentTiles = new List<GameObject>();
-        currentObstacles = new List<GameObject>();
-
-        Random.InitState(System.DateTime.Now.Millisecond); // gives the date in milliseconds to determine the tile seed. Think like minecraft seeds
-
         for (int i = 0; i < tileStartCount; ++i)
         {
-            SpawnTiles(startingTile.GetComponent<Tile>());
+            GameObject tile = InstantiateTile(startingTile);
+            tilePool.Enqueue(tile);
         }
 
-        SpawnTiles(SelectRandomGameObjectFromList(turnTiles).GetComponent<Tile>());
+        SpawnTile(startingTile);
     }
 
-    private void SpawnTiles(Tile tile, bool spawnObstacle = false)
+    private GameObject InstantiateTile(GameObject prefab)
     {
-        Quaternion newTileRoation =tile.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
-
-        previousTile = GameObject.Instantiate(tile.gameObject, currentTileLocation, newTileRoation);
-        currentTiles.Add(previousTile);
-
-        if (spawnObstacle) SpawnObstacle();
-
-        if(tile.type == TileType.STRAIGHT)
-        {
-            currentTileLocation += Vector3.Scale(previousTile.GetComponent<Renderer>().bounds.size, currentTileDirection);
-        }
-        
+        GameObject tile = Instantiate(prefab, transform);
+        tile.SetActive(false);
+        return tile;
     }
 
-    private void DeletePreviousTiles()
+    private void SpawnTile(GameObject prefab, bool spawnObstacle = false)
     {
-        // eventually swap this to an object pool
-        while(currentTiles.Count != 1)
-        {
-            GameObject tile = currentTiles[0];
-            currentTiles.RemoveAt(0);
-            Destroy(tile);
-        }
+        GameObject tile = GetTileFromPool(prefab);
+        tile.transform.position = CalculateNextTilePosition();
+        tile.SetActive(true);
+        currentTiles.Add(tile);
 
-        while (currentObstacles.Count != 0)
+        if (spawnObstacle)
         {
-            GameObject obstacle = currentObstacles[0];
-            currentObstacles.RemoveAt(0);
-            Destroy(obstacle);
+            SpawnObstacle(tile.transform.position);
         }
+    }
+
+    private GameObject GetTileFromPool(GameObject prefab)
+    {
+        if (tilePool.Count > 0)
+        {
+            GameObject tile = tilePool.Dequeue();
+            tile.SetActive(true);
+            return tile;
+        }
+        else
+        {
+            return InstantiateTile(prefab);
+        }
+    }
+
+    private void ReturnTileToPool(GameObject tile)
+    {
+        tile.SetActive(false);
+        tilePool.Enqueue(tile);
+    }
+
+    private void SpawnObstacle(Vector3 position)
+    {
+        if (Random.value <= obstacleSpawnChance)
+        {
+            GameObject obstacle = GetObstacleFromPool();
+            obstacle.transform.position = position;
+            obstacle.SetActive(true);
+            currentObstacles.Add(obstacle);
+        }
+    }
+
+    private GameObject GetObstacleFromPool()
+    {
+        if (obstaclePool.Count > 0)
+        {
+            GameObject obstacle = obstaclePool.Dequeue();
+            obstacle.SetActive(true);
+            return obstacle;
+        }
+        else
+        {
+            int randomIndex = Random.Range(0, obstacles.Count);
+            GameObject obstaclePrefab = obstacles[randomIndex];
+            return InstantiateTile(obstaclePrefab);
+        }
+    }
+
+    private void ReturnObstacleToPool(GameObject obstacle)
+    {
+        obstacle.SetActive(false);
+        obstaclePool.Enqueue(obstacle);
+    }
+
+    private Vector3 CalculateNextTilePosition()
+    {
+        return Vector3.zero;
     }
 
     public void  AddNewDirection(Vector3 direction)
     {
         // eventually swap this to an object pool
         currentTileDirection = direction;
-        DeletePreviousTiles();
+        ReturnTileToPool();
 
         Vector3 tilePlacementScale;
         if(previousTile.GetComponent<Tile>().type == TileType.SIDEWAYS)
